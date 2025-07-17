@@ -323,4 +323,4 @@ func InitDB() {
 
 ---
 
-Here is an additional documentation made using Postman: [Link](https://documenter.getpostman.com/view/46777269/2sB34ijKKU)
+Here is an additional documentation made using Postman: [Link](https://documenter.getpostman.com/view/46777269/2sB34ijKKU) / Make sure to run locally to see the results.
