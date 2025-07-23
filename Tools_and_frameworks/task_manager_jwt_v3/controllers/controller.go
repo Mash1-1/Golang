@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"task_man_v3/data"
 	"task_man_v3/models"
@@ -63,8 +64,15 @@ func UserLoginController(c *gin.Context) {
 	// Check if user is in the database 
 	existingUser, err := data.UserLoginService(user)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error" : "Invalid email or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error" : "Invalid username or password"})
 		return 
+	}
+	fmt.Println("IN DB: ", existingUser.Password)
+	fmt.Println("New one: ", user.Password)
+	// Check if the password is correct 
+	if bcrypt.CompareHashAndPassword([]byte(existingUser.Password), []byte(user.Password)) != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error" : "Invalid username or password"})
+		return
 	}
 
 	// Generate JWT

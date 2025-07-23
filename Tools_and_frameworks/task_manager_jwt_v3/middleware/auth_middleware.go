@@ -28,7 +28,7 @@ func AuthMiddleWare() gin.HandlerFunc {
 		authHeader:= c.GetHeader("Authorization")
 		if authHeader == "" {
 			// Handle missing authorization headers
-			c.JSON(401, gin.H{"error" : "Authorization header is required.", "message" : "You have to be registered to enter the user profile."})
+			c.JSON(401, gin.H{"error" : "Authorization header is required.", "message" : "You have to be registered to use this feature."})
 			c.Abort()
 			return 
 		}

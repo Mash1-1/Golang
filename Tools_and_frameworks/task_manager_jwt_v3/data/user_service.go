@@ -48,6 +48,7 @@ func FindUserService(user_name string) bool {
 
 func UserRegisterService(user models.User, hashedPass string) error {
 	// Add new user into the database
+	user.Password = hashedPass
 	_, err := UserDatabase.InsertOne(context.TODO(), user)
 	return err
 }
@@ -63,5 +64,5 @@ func UserLoginService(user models.User) (models.User, error){
 	if err != nil {
 		return models.User{}, err
 	}
-	return user, nil 
+	return existingUser, nil 
 }
