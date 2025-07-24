@@ -4,9 +4,26 @@ import (
 	"net/http"
 	"task_manager_ca/Domain"
 	usecases "task_manager_ca/Usecases"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
+
+type UserDTO struct{
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	ID       string `json:"id"`
+	Role     string `json:"role"`
+	Password string `json:"password"`
+}
+
+type TaskDTO struct {
+	ID string  `json:"id"`
+	Description string `json:"description"`
+	Status string `json:"status"`
+	DueDate time.Time `json:"due_date"`
+	Title string `json:"title"`
+}
 
 type UserController struct {
 	UserUseCase usecases.UserUseCase 
@@ -29,7 +46,7 @@ func NewTaskController(tc *usecases.TaskUseCase) (TaskController) {
 }
 
 func (UsrCtrl *UserController) RegisterController(c *gin.Context) {
-	var new_user Domain.User
+	var new_user UserDTO
 	// Get user information from the input
 	if err := c.ShouldBindJSON(&new_user); err != nil {
 		// Handle binding errors
@@ -38,7 +55,7 @@ func (UsrCtrl *UserController) RegisterController(c *gin.Context) {
 	}
 
 	// Call the usecase for user registration
-	err := UsrCtrl.UserUseCase.Register(new_user)
+	err := UsrCtrl.UserUseCase.Register(UsrCtrl.ChangeToDomain(&new_user))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error" : err.Error()})
 		return 
@@ -56,7 +73,7 @@ func (UsrCtrl *UserController) AdminPageController(c *gin.Context) {
 }
 
 func (UsrCtrl *UserController) LoginController(c *gin.Context) {
-	var user Domain.User 
+	var user UserDTO
 
 	// Accept user information in json format from user & handle binding error
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -65,7 +82,7 @@ func (UsrCtrl *UserController) LoginController(c *gin.Context) {
 	}
 
 	// Call the UserUseCase for login
-	token, err := UsrCtrl.UserUseCase.Login(user)
+	token, err := UsrCtrl.UserUseCase.Login(UsrCtrl.ChangeToDomain(&user))
 
 	if err != nil {
 		// Check the type of error and generate a valid response
@@ -112,13 +129,13 @@ func (TaskCtrl *TaskController) GetAllTasks(c *gin.Context) {
 }
 
 func (TaskCtrl *TaskController) CreateTaskController(c *gin.Context) {
-	var new_task Domain.Task 
+	var new_task TaskDTO
 	if err := c.ShouldBindJSON(&new_task); err != nil {
 		// Handle invalid inputs or binding errors
 		c.JSON(http.StatusBadRequest, gin.H{"error" : err.Error()})
 		return 
 	}
-	err := TaskCtrl.TaskUseCase.CreateTask(new_task)
+	err := TaskCtrl.TaskUseCase.CreateTask(TaskCtrl.ChangeToDomain(&new_task))
 	if err != nil {
 		// Handle database failure
 		c.JSON(http.StatusInternalServerError, gin.H{"error" : "Database failure"})
@@ -130,7 +147,7 @@ func (TaskCtrl *TaskController) CreateTaskController(c *gin.Context) {
 func (TaskCtrl *TaskController) UpdateTaskByID(c *gin.Context) {
 	id := c.Param("id")
 
-	var updatedTask Domain.Task 
+	var updatedTask TaskDTO
 	
 	if err := c.ShouldBindJSON(&updatedTask); err != nil {
 		// Handle invalid inputs or binding errors
@@ -138,7 +155,7 @@ func (TaskCtrl *TaskController) UpdateTaskByID(c *gin.Context) {
 		return 
 	}
 
-	err := TaskCtrl.TaskUseCase.UpdateTask(id, updatedTask)
+	err := TaskCtrl.TaskUseCase.UpdateTask(id, TaskCtrl.ChangeToDomain(&updatedTask))
 	if err != nil && err.Error() == "task not found" {
 		// Handle Task not found
 		c.JSON(http.StatusNotFound, gin.H{"message" : err.Error()})
@@ -169,4 +186,28 @@ func (TaskCtrl *TaskController) DeleteTaskController(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message" : "Task deleted!"})
+}
+
+func (TaskCtrl *TaskController) ChangeToDomain(t *TaskDTO) Domain.Task {
+	var task Domain.Task
+
+	task.Description = t.Description 
+	task.DueDate = t.DueDate
+	task.ID = t.ID
+	task.Status = t.Status
+	task.Title = t.Title
+
+	return task
+} 
+
+func (UsrCtrl *UserController) ChangeToDomain(u *UserDTO) Domain.User {
+	var user Domain.User 
+	
+	user.ID = u.ID 
+	user.Name = u.Name
+	user.Password = u.Password 
+	user.Role = u.Role
+	user.Username = u.Username
+
+	return user
 }
