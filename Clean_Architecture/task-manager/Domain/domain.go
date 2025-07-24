@@ -30,17 +30,17 @@ type JwtService interface {
 }
 
 type Task struct {
-	ID string  `json:"id"`
-	Description string `json:"description"`
-	Status string `json:"status"`
-	DueDate time.Time `json:"due_date"`
-	Title string `json:"title"`
+	ID string  
+	Description string 
+	Status string 
+	DueDate time.Time 
+	Title string 
 }
 
 type User struct {
-	Name     string `json:"name"`
-	Username string `json:"username"`
-	ID       string `json:"id"`
-	Role     string `json:"role"`
-	Password string `json:"password"`
+	Name     string 
+	Username string 
+	ID       string 
+	Role     string 
+	Password string 
 }
