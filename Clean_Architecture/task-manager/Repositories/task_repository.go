@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"task_manager_ca/Domain"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -36,16 +35,6 @@ func InitializeDB() (*mongo.Collection) {
 	// Clear previous usage leftover data
 	collection.DeleteMany(context.TODO(), bson.D{{}})
 
-	// Initialize sample tasks for testing
-	var Tasks = []interface{}{
-    Domain.Task{ID: "1", Status: "In progress", Title: "Task 4", Description: "Backend with Go", DueDate: time.Now().AddDate(0, 0, 5)},
-    Domain.Task{ID: "2", Status: "Pending", Title: "Design API Endpoints", Description: "Plan REST API structure and routes for task management", DueDate: time.Now().AddDate(0, 0, 2)},
-    Domain.Task{ID: "3", Status: "Completed", Title: "Setup Database", Description: "Initialize PostgreSQL and create necessary tables", DueDate: time.Now().AddDate(0, 0, -3)},
-    Domain.Task{ID: "4", Status: "In progress", Title: "Write Unit Tests", Description: "Cover task controller with unit tests using testify", DueDate: time.Now().AddDate(0, 0, 7)},
-    Domain.Task{ID: "5", Status: "Pending", Title: "Dockerize App", Description: "Create Dockerfile and docker-compose for development", DueDate: time.Now().AddDate(0, 0, 10)},
-}
-	// Insert sample data into the Database
-	collection.InsertMany(context.TODO(), Tasks)
 	return collection
 }
 
