@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"errors"
 	"task_manager_ca/Domain"
 	"task_manager_ca/mocks"
 	"testing"
@@ -52,6 +53,23 @@ func (suite *UserUsecaseSuite) TestRegister_Positive() {
 	suite.Jwt_serv.AssertExpectations(suite.T())
 }
 
+func (suite *UserUsecaseSuite) TestRegister_InvalidPassword_Negative() {
+	invalid_user := test_user
+	invalid_user.Password = ""
+	invalid_user.Username = ""
+	// Steup expected responses from mocks
+	suite.repository.On("FindUserRepository", "").Return(false)
+	suite.Password_service.On("EncryptPassword", "").Return([]uint8{}, errors.New("Password is empty"))
+	
+	// Check the actual function
+	err := suite.UsrUc.Register(invalid_user)
+
+	// Assert expectations
+	suite.Error(err, "error expected when registering with invalid credentials")
+	suite.Password_service.AssertExpectations(suite.T())
+	suite.Jwt_serv.AssertExpectations(suite.T())
+}
+
 func (suite *UserUsecaseSuite) TestLogin_Positive() {
 	// Setup expected responses from mocks
 	suite.repository.On("Login", test_user).Return(test_user, nil)
@@ -66,6 +84,36 @@ func (suite *UserUsecaseSuite) TestLogin_Positive() {
 	suite.repository.AssertExpectations(suite.T())
 	suite.Password_service.AssertExpectations(suite.T())
 	suite.Jwt_serv.AssertExpectations(suite.T())
+}
+
+func (suite *UserUsecaseSuite) TestLogin_NonExistingUser_Negative() {
+	invalid_user := test_user
+	invalid_user.Username = ""
+	// Setup expected responses from mocks
+	suite.repository.On("Login", invalid_user).Return(Domain.User{}, errors.New("Task not found"))
+
+	// Check actual function
+	_, err := suite.UsrUc.Login(invalid_user)
+
+	// Assert Expectations
+	suite.Error(err, "errors expected when logging in with invalid credentials.")
+	suite.repository.AssertExpectations(suite.T())
+}
+
+func (suite *UserUsecaseSuite) TestLogin_InvalidPassword_Negative() {
+	invalid_user := test_user
+	invalid_user.Password = ""
+	// Setup expected responses from mocks
+	suite.repository.On("Login", invalid_user).Return(invalid_user, nil)
+	suite.Password_service.On("CheckPasswordHash", invalid_user.Password, invalid_user.Password).Return(false)
+
+	// Check actual function
+	_, err := suite.UsrUc.Login(invalid_user)
+
+	// Assert Expectations
+	suite.Error(err, "errors expected when logging in with invalid credentials.")
+	suite.repository.AssertExpectations(suite.T())
+	suite.Password_service.AssertExpectations(suite.T())
 }
 
 func TestUserUseCaseSuite(t *testing.T) {

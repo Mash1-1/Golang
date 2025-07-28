@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"errors"
 	"task_manager_ca/Domain"
 	"task_manager_ca/mocks"
 	"testing"
@@ -47,6 +48,15 @@ func (suite *TaskUseCaseSuite) TestGetElementByID_Positive() {
 	suite.repository.AssertExpectations(suite.T())
 }
 
+func (suite *TaskUseCaseSuite) TestGetElementByID_NonExistingID_Negative() {
+	suite.repository.On("GetTaskByID", "1000").Return(Domain.Task{}, errors.New("Task not found"))
+	// Check operation
+	task, err := suite.TskUseCase.GetElementByID("1000")
+	suite.Error(err, "error expected with invalid id input")
+	suite.Equal(Domain.Task{}, task)
+	suite.repository.AssertExpectations(suite.T())
+}
+
 func (suite *TaskUseCaseSuite) TestGetAllElements_Positive() {
 	suite.repository.On("GetAllElements").Return(Tasks, nil)
 	// Check operation
@@ -64,6 +74,14 @@ func (suite *TaskUseCaseSuite) TestCreateTask_Positive() {
 	suite.repository.AssertExpectations(suite.T())
 }
 
+func (suite *TaskUseCaseSuite) TestCreateTask_InvalidTask_Negative() {
+	suite.repository.On("CreateTask", Domain.Task{}).Return(errors.New("nil Task"))
+	// Check function
+	err := suite.TskUseCase.CreateTask(Domain.Task{})
+	suite.Error(err, "expected error when creating a task with invalid inputs")
+	suite.repository.AssertExpectations(suite.T())
+}
+
 func (suite *TaskUseCaseSuite) TestUpdateTask_Positive() {
 	suite.repository.On("UpdateTaskByID", test_task.ID, test_task).Return(nil)
 	// Check function
@@ -72,11 +90,27 @@ func (suite *TaskUseCaseSuite) TestUpdateTask_Positive() {
 	suite.repository.AssertExpectations(suite.T())
 }
 
+func (suite *TaskUseCaseSuite) TestUpdateTask_NonExistingID_Negative() {
+	suite.repository.On("UpdateTaskByID", "1000", test_task).Return(errors.New("Task not found"))
+	// Check function
+	err := suite.TskUseCase.UpdateTask("1000", test_task)
+	suite.Error(err, "expected error when updating a task with invalid inputs")
+	suite.repository.AssertExpectations(suite.T())
+}
+
 func (suite *TaskUseCaseSuite) TestDeleteTask_Positive() {
 	suite.repository.On("DeleteTask", test_task.ID).Return(nil)
 	// Check function
 	err := suite.TskUseCase.DeleteTask(test_task.ID)
 	suite.NoError(err, "no error expected when deleting using valid inputs")
+	suite.repository.AssertExpectations(suite.T())
+}
+
+func (suite *TaskUseCaseSuite) TestDeleteTask_NonExistingID_Negative() {
+	suite.repository.On("DeleteTask", "1000").Return(errors.New("Task not found"))
+	// Check function
+	err := suite.TskUseCase.DeleteTask("1000")
+	suite.Error(err, "error expected when deleting using invalid inputs")
 	suite.repository.AssertExpectations(suite.T())
 }
 
