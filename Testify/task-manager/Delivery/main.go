@@ -36,5 +36,5 @@ func main() {
 	UsrCtrl := controllers.NewUserController(&uc)
 
 	// Initialize and run the router
-	routers.SetupRouter(UsrCtrl, TaskCtrl)
+	routers.SetupRouter(UsrCtrl, TaskCtrl, new(infrastructure.AuthMiddleWare))
 }

@@ -8,6 +8,14 @@ type TaskUseCase struct {
 	TaskRepo Domain.TaskRepository
 }
 
+type TaskUseCaseI interface {
+	GetElementByID(id string) (Domain.Task, error)
+	GetAllElements() ([]Domain.Task, error)
+	CreateTask(new_task Domain.Task) error
+	UpdateTask(id string, new_task Domain.Task) error
+	DeleteTask(id string) error
+}
+
 func NewTaskUseCase(tr Domain.TaskRepository) TaskUseCase{
 	return TaskUseCase{
 		TaskRepo: tr,

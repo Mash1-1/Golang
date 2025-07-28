@@ -75,6 +75,18 @@ func (suite *TaskRepositorySuite) TestGetTaskByID_Positive() {
 }
 // Negative for get task by ID - Non existing id -> "task not found"
 
+func (suite *TaskRepositorySuite) TestGetTaskByID_NonExistingID_Negative() {
+	// Add Tasks into the database for testing
+	suite.db.InsertMany(context.TODO(), Tasks)
+	non_existing_id := "100"
+
+	// Check function
+	_, err := suite.TskRepo.GetTaskByID(non_existing_id)
+
+	// Check that err is not nil
+	suite.Error(err, "error expected when getting a non existing task task from db")
+}
+
 func (suite *TaskRepositorySuite) TestCreateTask_Positive() {
 	// Get a test task to test with
 	test_task := Tasks[0].(Domain.Task)
@@ -84,6 +96,17 @@ func (suite *TaskRepositorySuite) TestCreateTask_Positive() {
 
 	// Assert no error
 	suite.NoError(err, "could not create task properly")
+}
+// Negative for create task, nil task
+func (suite *TaskRepositorySuite) TestCreateTask_NilTask_Negative() {
+	// Get a test task to test with
+	invalid_task := Domain.Task{}
+
+	// Check Function
+	err := suite.TskRepo.CreateTask(invalid_task)
+
+	// Assert error not equal to nil
+	suite.Error(err, "expected error when creating nil task")
 }
 
 func (suite *TaskRepositorySuite) TestUpdateTaskByID_Positive() {

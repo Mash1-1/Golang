@@ -11,6 +11,11 @@ type UserUseCase struct {
 	JwtImp Domain.JwtService
 }
 
+type UserUseCaseI interface {
+	Register(user Domain.User) error
+	Login(user Domain.User) (string, error)
+}
+
 func NewUserUseCase(UsrRepo Domain.UserRepository, PassServ Domain.PasswordService, JwtServ Domain.JwtService) UserUseCase {
 	return UserUseCase{
 		PasswordService: PassServ,

@@ -80,8 +80,12 @@ func (tr *TaskRepo) GetTaskByID(id string) (Domain.Task, error) {
 
 func (tr *TaskRepo) CreateTask(new_task Domain.Task) error {
 	// Add the new task to the Database
-	_, err := tr.TaskDatabase.InsertOne(context.TODO(), new_task)
-	return err 
+	tmp := Domain.Task{}
+	if new_task != tmp{
+		_, err := tr.TaskDatabase.InsertOne(context.TODO(), new_task)
+		return err
+	}
+	return errors.New("empty task")
 }
 
 func (tr *TaskRepo) UpdateTaskByID(id string, updatedTask Domain.Task) error {
