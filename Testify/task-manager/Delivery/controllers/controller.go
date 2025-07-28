@@ -26,22 +26,22 @@ type TaskDTO struct {
 }
 
 type UserController struct {
-	UserUseCase usecases.UserUseCase 
+	UserUseCase usecases.UserUseCaseI
 }
 
 type TaskController struct {
-	TaskUseCase usecases.TaskUseCase
+	TaskUseCase usecases.TaskUseCaseI
 }
 
-func NewUserController(uc *usecases.UserUseCase) (UserController) {
+func NewUserController(uc usecases.UserUseCaseI) (UserController) {
 	return UserController{
-		UserUseCase: *uc,
+		UserUseCase: uc,
 	}
 }
 
-func NewTaskController(tc *usecases.TaskUseCase) (TaskController) {
+func NewTaskController(tc usecases.TaskUseCaseI) (TaskController) {
 	return TaskController{
-		TaskUseCase: *tc,
+		TaskUseCase: tc,
 	}
 }
 
@@ -61,7 +61,7 @@ func (UsrCtrl *UserController) RegisterController(c *gin.Context) {
 		return 
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message" : "user registered successfully"})
+	c.JSON(http.StatusCreated, gin.H{"message" : "user registered successfully"})
 }
 
 func (UsrCtrl *UserController) UserProfileController(c *gin.Context) {
@@ -95,7 +95,7 @@ func (UsrCtrl *UserController) LoginController(c *gin.Context) {
 	}
 
 	// Give token for the user to use for upcoming sessions.
-	c.JSON(http.StatusOK, gin.H{"message" : "Logged in successfully!", "token" : token})
+	c.JSON(http.StatusCreated, gin.H{"message" : "Logged in successfully!", "token" : token})
 }
 
 func (TaskCtrl *TaskController) GetTaskByID(c *gin.Context) {

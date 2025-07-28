@@ -9,7 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AuthRoleMiddleWare() gin.HandlerFunc {
+type AuthMiddleWareI interface {
+	Validate_role() gin.HandlerFunc
+	Validate_token() gin.HandlerFunc
+}
+
+type AuthMiddleWare struct {}
+
+func (mw AuthMiddleWare) Validate_role() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, ok := c.Get("role")
 		if ok && role == "admin" {
@@ -21,7 +28,7 @@ func AuthRoleMiddleWare() gin.HandlerFunc {
 	}
 }
 
-func AuthMiddleWare() gin.HandlerFunc {
+func (mw AuthMiddleWare) Validate_token() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Implement Middleware logic 
 		authHeader:= c.GetHeader("Authorization")
