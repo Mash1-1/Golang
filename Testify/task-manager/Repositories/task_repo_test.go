@@ -73,7 +73,6 @@ func (suite *TaskRepositorySuite) TestGetTaskByID_Positive() {
 	// Check that the returned task is the same as the task whose id was sent
 	suite.Equal(test_task.ID, result.ID, "wrong task returned")
 }
-// Negative for get task by ID - Non existing id -> "task not found"
 
 func (suite *TaskRepositorySuite) TestGetTaskByID_NonExistingID_Negative() {
 	// Add Tasks into the database for testing
@@ -97,8 +96,8 @@ func (suite *TaskRepositorySuite) TestCreateTask_Positive() {
 	// Assert no error
 	suite.NoError(err, "could not create task properly")
 }
-// Negative for create task, nil task
-func (suite *TaskRepositorySuite) TestCreateTask_NilTask_Negative() {
+
+func (suite *TaskRepositorySuite) TestCreateTask_invalidTask_Negative() {
 	// Get a test task to test with
 	invalid_task := Domain.Task{}
 
@@ -127,7 +126,21 @@ func (suite *TaskRepositorySuite) TestUpdateTaskByID_Positive() {
 	suite.NoError(err, "error while getting task to check update")
 	suite.Equal("done", result.Description, "task not updated properly")
 }
-// Negative for update task by id - Non existent id -> task not found 
+
+func (suite *TaskRepositorySuite) TestUpdateTaskByID_NonExistingID_Negative() {
+	// Get a test task for testing
+	invalid_task := Tasks[0].(Domain.Task)
+	invalid_task.ID = "1000"
+	
+	// Check function
+	invalid_task.Description = "done"
+	err := suite.TskRepo.UpdateTaskByID(invalid_task.ID, invalid_task)
+	suite.Error(err, "error while updating non existing task")
+
+	// Get task and check equality
+	_, err = suite.TskRepo.GetTaskByID(invalid_task.ID)
+	suite.Error(err, "error while getting task to check update")
+}
 
 func (suite *TaskRepositorySuite) TestDeleteTaskByID_Positive() {
 	test_task := Tasks[0].(Domain.Task)
@@ -141,8 +154,11 @@ func (suite *TaskRepositorySuite) TestDeleteTaskByID_Positive() {
 	_, err = suite.TskRepo.GetTaskByID(test_task.ID)
 	suite.NotNil(err, "error expected when trying to find element in database after deletion")
 }
-// Negative for DeleteTaskByID - Non existent id -> task not found
 
+func (suite *TaskRepositorySuite) TestDeleteTaskByID_NonExistingID_Negative() {
+	err := suite.TskRepo.DeleteTask("1000")
+	suite.Error(err, "error expected when deleting with invalid id")
+}
 func TestTaskRepositorySuite(t *testing.T) {
 	// Run the suite 
 	suite.Run(t, new(TaskRepositorySuite))

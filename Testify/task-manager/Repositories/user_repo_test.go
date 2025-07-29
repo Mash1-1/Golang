@@ -58,6 +58,12 @@ func (suite *UserRepositorySuite) TestLogin_Positive() {
 	suite.NoError(err, "no error expected when logging in with a valid user credential.")
 }
 
+func (suite *UserRepositorySuite) TestLogin_WrongCredentials_Negative() {
+	// Check the function
+	_, err := suite.usrRepo.Login(test_user)
+	suite.Error(err, "error expected when logging in with an invalid user credential.")
+}
+
 func (suite *UserRepositorySuite) TestFindUserRepository_Positive() {
 	// Add the user into the database and assertion
 	_, err := suite.db.InsertOne(context.TODO(), test_user)
@@ -66,6 +72,12 @@ func (suite *UserRepositorySuite) TestFindUserRepository_Positive() {
 	// Check the function
 	ok := suite.usrRepo.FindUserRepository(test_user.Username)
 	suite.True(ok, "expected true while looking for user but found false")
+}
+
+func (suite *UserRepositorySuite) TestFindUserRepository_NonExisitingUser_Negative() {
+	// Check the function
+	ok := suite.usrRepo.FindUserRepository(test_user.Username)
+	suite.False(ok, "expected false while looking for non existing user but found true")
 }
 
 func TestUserRepositoryTestSuite(t *testing.T) {
