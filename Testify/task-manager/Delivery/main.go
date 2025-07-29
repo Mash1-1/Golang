@@ -38,3 +38,4 @@ func main() {
 	// Initialize and run the router
 	routers.SetupRouter(UsrCtrl, TaskCtrl, new(infrastructure.AuthMiddleWare))
 }
+// Check continous integration
