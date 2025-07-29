@@ -345,6 +345,82 @@ db := client.Database(os.Getenv("DB_NAME"))
 
 ---
 
+## Testing with golang testify
+
+## 🧪 Unit Testing Documentation
+
+### ✅ Overview
+
+This project uses **Go's built-in `testing` package** for unit testing. Each component (UseCase, Repository, Controller, etc.) is tested independently using test suites, mocks, and assertions to ensure correctness and isolation.
+
+### 🚀 Running Tests Locally
+
+To run all unit tests:
+
+```
+go test ./...
+```
+
+To run a specific test file or package:
+
+```
+go test ./path/to/package
+```
+
+To view detailed output:
+
+```
+go test -v ./...
+```
+
+### 📊 Test Coverage
+
+To check test coverage across the codebase:
+
+```
+go test -cover ./...
+```
+
+To generate a detailed HTML coverage report:
+
+```
+go test -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out
+```
+
+> 📈 **Target Coverage:** Aim for 80%+ unit test coverage across business logic (UseCases) and critical path components.
+
+### 🧪 Test Suite Structure
+
+-   Tests are written using the `testify/suite` and `testify/mock` libraries.
+-   Each test suite mocks external dependencies like repositories or services.
+-   Example pattern:
+
+```go
+func (suite *TaskUseCaseSuite) TestGetTaskByID_Positive() {
+    suite.repository.On("GetTaskByID", testTask.ID).Return(testTask, nil)
+    result, err := suite.useCase.GetTaskByID(testTask.ID)
+    suite.NoError(err)
+    suite.Equal(testTask, result)
+}
+```
+
+### ⚠️ Issues Encountered
+
+-   **Test Interference:** Shared state between tests caused unexpected behavior. Resolved by isolating test setup using `SetupTest()`.
+-   **Mock Inconsistencies:** Incorrect expectations on mocked methods led to test failures. Ensured mocks match real interface behavior.
+
+### 🔧 Tools Used
+
+-   `github.com/stretchr/testify` – for assertions, mocking, and test suites
+-   `go tool cover` – for visualizing test coverage
+
+---
+
+> 🛠️ Ensure you run tests frequently during development to catch regressions early.
+
+---
+
 ## 📘 Update Summary
 
 -   Switched from in-memory store to MongoDB.
