@@ -1,35 +1,35 @@
 name: Go Unit Tests
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+    test:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v3
+        defaults:
+            run:
+                working-directory: Testify/task-manager # 👈 your Go project folder
 
-      - name: 🔧 Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.22'
+        steps:
+            - name: 📥 Checkout code
+              uses: actions/checkout@v3
 
-      - name: 📦 Install dependencies
-        run: go mod tidy
+            - name: 🔧 Set up Go
+              uses: actions/setup-go@v4
+              with:
+                  go-version: "1.22"
 
-      - name: 🧪 Run Unit Tests
-        run: go test -v ./...
+            - name: 📦 Install dependencies
+              run: go mod tidy
 
-      - name: 📊 Generate Test Coverage
-        run: |
-          go test -coverprofile=coverage.out ./...
-          go tool cover -func=coverage.out
+            - name: 🧪 Run Unit Tests
+              run: go test -v ./...
 
-      - name: ✅ Check Minimum Coverage (optional)
-        run: |
-          go tool cover -func=coverage.out | grep total | awk '{print "Total Coverage: " $3}'
+            - name: 📊 Generate Coverage Report
+              run: |
+                  go test -coverprofile=coverage.out ./...
+                  go tool cover -func=coverage.out
