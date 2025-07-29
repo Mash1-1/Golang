@@ -10,10 +10,6 @@ jobs:
     test:
         runs-on: ubuntu-latest
 
-        defaults:
-            run:
-                working-directory: Testify/task-manager # 👈 your Go project folder
-
         steps:
             - name: 📥 Checkout code
               uses: actions/checkout@v3
@@ -22,14 +18,18 @@ jobs:
               uses: actions/setup-go@v4
               with:
                   go-version: "1.22"
+                  cache-dependency-path: Testify/task-manager/go.sum
 
             - name: 📦 Install dependencies
+              working-directory: Testify/task-manager
               run: go mod tidy
 
             - name: 🧪 Run Unit Tests
+              working-directory: Testify/task-manager
               run: go test -v ./...
 
             - name: 📊 Generate Coverage Report
+              working-directory: Testify/task-manager
               run: |
                   go test -coverprofile=coverage.out ./...
                   go tool cover -func=coverage.out
