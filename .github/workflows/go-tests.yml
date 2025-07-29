@@ -1,35 +1,30 @@
-name: Go Unit Tests
-
-on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
-
 jobs:
     test:
         runs-on: ubuntu-latest
 
+        services:
+            mongo:
+                image: mongo:6
+                ports:
+                    - 27017:27017
+                options: >-
+                    --health-cmd="mongosh --eval 'db.stats()'" 
+                    --health-interval=10s 
+                    --health-timeout=5s 
+                    --health-retries=5
+
         steps:
-            - name: 📥 Checkout code
+            - name: Checkout code
               uses: actions/checkout@v3
 
-            - name: 🔧 Set up Go
+            - name: Set up Go
               uses: actions/setup-go@v4
               with:
                   go-version: "1.22"
                   cache-dependency-path: Testify/task-manager/go.sum
 
-            - name: 📦 Install dependencies
-              working-directory: Testify/task-manager
-              run: go mod tidy
-
-            - name: 🧪 Run Unit Tests
-              working-directory: Testify/task-manager
-              run: go test -v ./...
-
-            - name: 📊 Generate Coverage Report
+            - name: Run tests
               working-directory: Testify/task-manager
               run: |
-                  go test -coverprofile=coverage.out ./...
-                  go tool cover -func=coverage.out
+                  go mod tidy
+                  go test -v ./...
