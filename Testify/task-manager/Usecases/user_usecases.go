@@ -57,7 +57,7 @@ func (uc *UserUseCase) Login(user Domain.User) (string, error) {
 	
 	// Check if the user entered the correct password
 	if !uc.PasswordService.CheckPasswordHash(user.Password, existingUser.Password){
-		return "", errors.New("invalid email or password")
+		return "", errors.New("invalid username or password")
 	}
 
 	// Generate Jwt Token

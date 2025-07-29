@@ -3,6 +3,7 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"task_manager_ca/Domain"
@@ -69,6 +70,25 @@ func (suite *UserControllerSuite) TestRegisterController_Positive() {
 	suite.useCase.AssertExpectations(suite.T())
 }
 
+func (suite *UserControllerSuite) TestRegisterController_ExistingUsername_Negative() {
+	invalid_user := test_user
+	invalid_user.Username = "exists"
+	// Setup expected responses from mocks
+	suite.useCase.On("Register", invalid_user).Return(errors.New("username already in use"))
+
+	// Marshaling and some assertion
+	requestBody, err := json.Marshal(&invalid_user)
+	suite.NoError(err, "No error expected when marshaling valid user")
+
+	// Send the request to the server (actual test)
+	response, err := http.Post(suite.testServer.URL + "/register", "application/json", bytes.NewBuffer(requestBody))
+
+	// Assert expectations
+	suite.NoError(err, "No error expected when sending valid register request")
+	suite.Equal(http.StatusInternalServerError, response.StatusCode)
+	suite.useCase.AssertExpectations(suite.T())
+}
+
 func (suite *UserControllerSuite) TestUserProfileController_Positive() {
 	// Send request (check actual function)
 	resp, err := http.Get(suite.testServer.URL+"/user_profile")
@@ -103,6 +123,45 @@ func (suite *UserControllerSuite) TestLoginController_Positive() {
 	suite.NoError(err, "No error expected when sending valid login request with post")
 	suite.useCase.AssertExpectations(suite.T())
 }
+
+func (suite *UserControllerSuite) TestLoginController_NonExistingUsername_Negative() {
+	invalid_user := test_user
+	invalid_user.Username = "doesnt exist"
+	// Setup dependency responses for mock
+	suite.useCase.On("Login", invalid_user).Return("", errors.New("Username not found"))
+
+	// Marshaling and some assertion
+	requestBody, err := json.Marshal(&invalid_user) 
+	suite.NoError(err, "No error expected when marshaling valid user to json")
+
+	// Send request
+	response, err := http.Post(suite.testServer.URL+"/login", "application/json", bytes.NewBuffer(requestBody))
+	
+	//Assert expectations
+	suite.Equal(http.StatusUnauthorized, response.StatusCode)
+	suite.NoError(err, "No error expected when sending valid login request with post")
+	suite.useCase.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerSuite) TestLoginController_WrongPassword_Negative() {
+	invalid_user := test_user
+	invalid_user.Password = "111"
+	// Setup dependency responses for mock
+	suite.useCase.On("Login", invalid_user).Return("", errors.New("invalid username or password"))
+
+	// Marshaling and some assertion
+	requestBody, err := json.Marshal(&invalid_user) 
+	suite.NoError(err, "No error expected when marshaling valid user to json")
+
+	// Send request
+	response, err := http.Post(suite.testServer.URL+"/login", "application/json", bytes.NewBuffer(requestBody))
+	
+	//Assert expectations
+	suite.Equal(http.StatusUnauthorized, response.StatusCode)
+	suite.NoError(err, "No error expected when sending valid login request with post")
+	suite.useCase.AssertExpectations(suite.T())
+}
+
 func TestUserControllerSuite(t *testing.T) {
 	// Run the suite
 	suite.Run(t, new(UserControllerSuite))

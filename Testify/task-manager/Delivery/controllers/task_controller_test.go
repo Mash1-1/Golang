@@ -3,6 +3,7 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"task_manager_ca/Domain"
@@ -53,6 +54,32 @@ func (suite *TaskControllerSuite) TestGetTaskByID_Positive() {
 	//Assert expectations
 	suite.NoError(err, "no error expected when sending valid get request")	
 	suite.Equal(http.StatusOK, resp.StatusCode)
+	suite.useCase.AssertExpectations(suite.T())
+}
+
+func (suite *TaskControllerSuite) TestGetTaskByID_NonExistingID_Negative() {
+	// Setup what to return for mocks
+	suite.useCase.On("GetElementByID", "1000").Return(Domain.Task{}, errors.New("task not found"))
+
+	// Send request
+	resp, err := http.Get(suite.testServer.URL+"/tasks/1000")
+	
+	//Assert expectations
+	suite.NoError(err, "no error expected when sending valid get request")	
+	suite.Equal(http.StatusNotFound, resp.StatusCode)
+	suite.useCase.AssertExpectations(suite.T())
+}
+
+func (suite *TaskControllerSuite) TestGetTaskByID_DatabaseFailure_Negative() {
+	// Setup what to return for mocks
+	suite.useCase.On("GetElementByID", "100").Return(Domain.Task{}, errors.New("database failed"))
+
+	// Send request
+	resp, err := http.Get(suite.testServer.URL+"/tasks/"+"100")
+	
+	//Assert expectations
+	suite.NoError(err, "no error expected when sending valid get request")	
+	suite.Equal(http.StatusInternalServerError, resp.StatusCode)
 	suite.useCase.AssertExpectations(suite.T())
 }
 
@@ -107,6 +134,27 @@ func (suite *TaskControllerSuite) TestUpdateTaskByID_Positive() {
 	suite.useCase.AssertExpectations(suite.T())
 }
 
+
+func (suite *TaskControllerSuite) TestUpdateTaskByID_NonExistingID_Negative() {
+	// Setup Dependencies/mocks
+	suite.useCase.On("UpdateTask", "1000", test_task).Return(errors.New("task not found"))
+
+	// Marshalling and some assertion
+	requestBody, err := json.Marshal(test_task)
+	suite.NoError(err, "no error expected when marshaling valid task")
+
+	//setup put request 
+	request, err := http.NewRequest(http.MethodPut, suite.testServer.URL+"/tasks/"+"1000", bytes.NewBuffer(requestBody))
+	suite.NoError(err, "no error expected when setting up valid update request")
+	request.Header.Set("Content-Type", "application/json")
+	
+	//send request
+	resp, err := http.DefaultClient.Do(request)
+	suite.NoError(err, "no error expected when ssending valid update request")
+	suite.Equal(http.StatusNotFound, resp.StatusCode)
+	suite.useCase.AssertExpectations(suite.T())
+}
+
 func (suite *TaskControllerSuite) TestDeleteTaskController_Positive() {
 	// Setup mocks/dependencies
 	suite.useCase.On("DeleteTask", test_task.ID).Return(nil)
@@ -119,6 +167,21 @@ func (suite *TaskControllerSuite) TestDeleteTaskController_Positive() {
 	resp, err := http.DefaultClient.Do(request)
 	suite.NoError(err, "no error expected when sending valid delete request")
 	suite.Equal(http.StatusOK, resp.StatusCode)
+	suite.useCase.AssertExpectations(suite.T())
+}
+
+func (suite *TaskControllerSuite) TestDeleteTaskController_NonExistingID_Negative() {
+	// Setup mocks/dependencies
+	suite.useCase.On("DeleteTask", "1000").Return(errors.New("task not found"))
+
+	// Setup request
+	request, err := http.NewRequest(http.MethodDelete, suite.testServer.URL+"/tasks/" + "1000", bytes.NewBuffer([]byte{}))
+	suite.NoError(err, "no error expected when setting up valid delete request")
+	
+	// Send request
+	resp, err := http.DefaultClient.Do(request)
+	suite.NoError(err, "no error expected when sending valid delete request")
+	suite.Equal(http.StatusNotFound, resp.StatusCode)
 	suite.useCase.AssertExpectations(suite.T())
 }
 
